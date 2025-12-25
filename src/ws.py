@@ -8,7 +8,9 @@ import readline
 
 parser = argparse.ArgumentParser(description="WebSocket client for JSMAF")
 parser.add_argument("ip", help="IP address of the PS4")
-parser.add_argument("-p", "--port", type=int, default=40404, help="Port number (default: 40404)")
+parser.add_argument(
+    "-p", "--port", type=int, default=40404, help="Port number (default: 40404)"
+)
 parser.add_argument("-d", "--delay", type=int, default=2, help="Delay (default: 2)")
 
 args = parser.parse_args()
@@ -17,6 +19,7 @@ IP = args.ip
 PORT = args.port
 DELAY = args.delay
 RETRY = True
+
 
 async def send_file(ws: websockets.ClientConnection, file_path: str):
     try:
@@ -31,6 +34,7 @@ async def send_file(ws: websockets.ClientConnection, file_path: str):
         print(f"[*] Sent {file_path} ({len(message)} bytes) to server")
     except Exception as e:
         print(f"[!] Failed to send file: {e}")
+
 
 async def command(ws: websockets.ClientConnection):
     global RETRY
@@ -57,6 +61,7 @@ async def command(ws: websockets.ClientConnection):
         else:
             print("[*] Unknown command. Use: send <path-to-file>")
 
+
 async def receiver(ws: websockets.ClientConnection):
     try:
         async for data in ws:
@@ -66,6 +71,7 @@ async def receiver(ws: websockets.ClientConnection):
         pass
     except Exception as e:
         print(f"[!] {e}")
+
 
 async def main():
     while RETRY:
@@ -94,6 +100,7 @@ async def main():
                 command_task.cancel()
             if ws is not None and ws.state != websockets.protocol.State.CLOSED:
                 await ws.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
