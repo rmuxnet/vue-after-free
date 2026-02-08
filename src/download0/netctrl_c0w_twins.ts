@@ -642,7 +642,7 @@ function init () {
     return amaj === bmaj ? amin - bmin : amaj - bmaj
   }
 
-  if (compare_version(FW_VERSION, '9.00') < 0 || compare_version(FW_VERSION, '13.00') > 0) {
+  if (compare_version(FW_VERSION, '9.00') >= 0 || compare_version(FW_VERSION, '13.00') <= 0) {
     log('Unsupported PS4 firmware\nSupported: 9.00-13.00\nAborting...')
     send_notification('Unsupported PS4 firmware\nAborting...')
     return false
