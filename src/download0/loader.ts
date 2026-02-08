@@ -150,7 +150,7 @@ if (!is_jailbroken) {
     if (compare_version(FW_VERSION, '7.00') >= 0 && compare_version(FW_VERSION, '12.02') <= 0) {
       use_lapse = true
       lapse()
-    } else if (compare_version(FW_VERSION, '12.52') >= 0 && compare_version(FW_VERSION, '13.00') <= 0) {
+    } else if (compare_version(FW_VERSION, '12.50') >= 0 && compare_version(FW_VERSION, '13.00') <= 0) {
       include('netctrl_c0w_twins.js')
     }
   }
