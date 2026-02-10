@@ -5,7 +5,7 @@ import argparse
 import asyncio
 import pathlib
 import readline  # noqa: F401
-from datetime import datetime
+from datetime import datetime, timezone
 
 import websockets
 
@@ -24,9 +24,46 @@ DELAY = args.delay
 RETRY = True
 
 
+LOG_FILE = f"logs_{datetime.now(timezone.utc).strftime('%H_%M_%S')}_utc.txt"
+CURRENT_ATTEMPT = 1
+IS_NEW_ATTEMPT = True
+ATTEMPT_START_TIME = None
+
+try:
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        f.write("note:\n\n")
+except Exception as e:
+    print(f"[!] Failed to create log file: {e}")
+
+
 def log_print(message: str) -> None:
-    time_now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-    print(f"[{time_now}] {message}")
+    global CURRENT_ATTEMPT, IS_NEW_ATTEMPT, ATTEMPT_START_TIME
+
+    time_now = datetime.now(timezone.utc).strftime("%H:%M:%S.%f")[:-3]
+    log_entry = f"[{time_now}] {message}"
+
+    print(log_entry)
+
+    try:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            if IS_NEW_ATTEMPT:
+                f.write(f"attempt {CURRENT_ATTEMPT}:\n")
+                ATTEMPT_START_TIME = datetime.now(timezone.utc)
+                IS_NEW_ATTEMPT = False
+
+            f.write(log_entry + "\n")
+
+            if "Disconnected" in message:
+                if ATTEMPT_START_TIME:
+                    duration = datetime.now(timezone.utc) - ATTEMPT_START_TIME
+                    f.write(f"Time Taken: {duration}\n")
+
+                f.write("\n")
+                CURRENT_ATTEMPT += 1
+                IS_NEW_ATTEMPT = True
+
+    except Exception:
+        pass
 
 
 async def send_file(ws: websockets.ClientConnection, file_path: str) -> None:
