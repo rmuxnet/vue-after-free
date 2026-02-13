@@ -38,4 +38,4 @@ struct.register('NotificationRequest', [
   { type: 'Uint8', name: 'unk[1024]' },
 ])
 
-export const APP_VERSION = '%VERSION_STRING%';
+export const APP_VERSION = '%VERSION_STRING%'
