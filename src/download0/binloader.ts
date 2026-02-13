@@ -110,7 +110,7 @@ export function binloader_init () {
     '/mnt/usb4/payload.bin',
     '/mnt/usb0/payload.bin.bin',
     '/mnt/usb1/payload.bin.bin',
-    '/mnt/usb2/payload.bin.bin',//yes we have to do this 😅
+    '/mnt/usb2/payload.bin.bin', // yes we have to do this 😅
     '/mnt/usb3/payload.bin.bin',
     '/mnt/usb4/payload.bin.bin'
   ]

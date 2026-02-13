@@ -6,11 +6,11 @@ import { show_success, run_binloader } from 'download0/loader'
 // include('userland.js')
 
 if (typeof libc_addr === 'undefined') {
-  include('userland.js');
+  include('userland.js')
 }
-include('kernel.js');
-include('stats-tracker.js');
-include('binloader.js');
+include('kernel.js')
+include('stats-tracker.js')
+include('binloader.js')
 if (!String.prototype.padStart) {
   String.prototype.padStart = function padStart (targetLength, padString) {
     targetLength = targetLength >> 0 // truncate if number or convert non-number to 0
