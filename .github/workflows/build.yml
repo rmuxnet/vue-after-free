@@ -40,6 +40,11 @@ jobs:
           cp -r src/download0/vid dist/download0/
           cp src/download0/*.aes dist/download0/
 
+      - name: Generate manifest
+        run: |
+          cd dist/download0
+          find . -type f | sed 's|^\./||' | sort > manifest.txt
+
       - name: Encrypt savedata
         run: |
           pip install cryptography
