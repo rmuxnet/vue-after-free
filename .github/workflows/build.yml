@@ -51,8 +51,8 @@ jobs:
       - name: Generate manifest
         run: |
           cd dist/download0
-          # Create the version file for the updater to check
-          echo "${{ github.sha }}" > version.txt
+          # Create the version file with the Smart Version string
+          echo "v${{ env.VERSION }} (${{ env.SHORT_SHA }})" > version.txt
           
           # Create the file list
           find . -type f | sed 's|^\./||' | sort > manifest.txt

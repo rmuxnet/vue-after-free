@@ -244,7 +244,7 @@ import { utils } from 'download0/types'
               
               if (localVersion === remoteVersion && localVersion !== 'NONE') {
                   titleText.text = 'Already Up to Date!'
-                  statusText.text = 'Version: ' + localVersion.substring(0, 7)
+                  statusText.text = 'Version: ' + localVersion
                   progressFg.width = barW
                   
                   var forceText = new jsmaf.Text()
