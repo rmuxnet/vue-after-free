@@ -24,12 +24,18 @@ log('All scripts loaded')
 // Increment total attempts
 stats.load()
 
-export function show_success () {
-  setTimeout(() => {
+export function show_success (immediate?: boolean, skipStats?: boolean) {
+  if (immediate) {
     jsmaf.root.children.push(bg_success)
     log('Logging Success...')
-    stats.incrementSuccess()
-  }, 2000)
+    if (!skipStats) stats.incrementSuccess()
+  } else {
+    setTimeout(() => {
+      jsmaf.root.children.push(bg_success)
+      log('Logging Success...')
+      if (!skipStats) stats.incrementSuccess()
+    }, 2000)
+  }
 }
 
 const is_jailbroken = checkJailbroken()
