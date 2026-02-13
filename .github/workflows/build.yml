@@ -2,6 +2,8 @@ name: Build and Release
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 on:
   push:
@@ -66,6 +68,30 @@ jobs:
         with:
           files: vue-after-free-${{ github.ref_name }}.zip
 
+  deploy-pages:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        
   ufs-image:
     needs: build
     runs-on: ubuntu-latest
