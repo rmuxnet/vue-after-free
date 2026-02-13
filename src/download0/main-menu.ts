@@ -1,6 +1,7 @@
 import { lang, useImageText, textImageBase } from 'download0/languages'
 import { libc_addr } from 'download0/userland'
 import { fn, BigInt } from 'download0/types'
+import { APP_VERSION } from 'download0/defs'
 
 (function () {
   include('languages.js')
@@ -42,6 +43,13 @@ import { fn, BigInt } from 'download0/types'
     height: logoHeight
   })
   jsmaf.root.children.push(logo)
+
+  const verText = new jsmaf.Text()
+  verText.text = APP_VERSION
+  verText.x = 20
+  verText.y = 1040
+  verText.style = 'white'
+  jsmaf.root.children.push(verText)
 
   const menuOptions = [
     { label: lang.jailbreak, script: 'loader.js', imgKey: 'jailbreak' },

@@ -29,8 +29,16 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Replace version string with commit hash
-        run: find ./dist -type f -name '*.js' -exec sed -i "s/%VERSION_STRING%/${{ github.sha }}/g" {} +
+      - name: Get version
+        id: get_version
+        run: |
+          echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+          echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Replace version string
+        run: |
+          VERSION_STR="v${{ env.VERSION }} (${{ env.SHORT_SHA }})"
+          find ./dist -type f -name '*.js' -exec sed -i "s/%VERSION_STRING%/$VERSION_STR/g" {} +
 
       - name: Copy assets to dist
         run: |
@@ -43,6 +51,10 @@ jobs:
       - name: Generate manifest
         run: |
           cd dist/download0
+          # Create the version file for the updater to check
+          echo "${{ github.sha }}" > version.txt
+          
+          # Create the file list
           find . -type f | sed 's|^\./||' | sort > manifest.txt
 
       - name: Encrypt savedata

@@ -37,3 +37,5 @@ struct.register('NotificationRequest', [
   { type: 'Uint8', name: 'icon_uri[1024]' },
   { type: 'Uint8', name: 'unk[1024]' },
 ])
+
+export const APP_VERSION = '%VERSION_STRING%';
