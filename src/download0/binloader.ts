@@ -615,7 +615,7 @@ export function binloader_init () {
         show_success(true, true)
         log('Waiting 3 seconds...')
         const delay_start = Date.now()
-        while (Date.now() - delay_start < 3000) {}
+        while (Date.now() - delay_start < 3000) { /* busy wait */ }
       }
 
       BinLoader.run()
