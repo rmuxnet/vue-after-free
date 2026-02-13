@@ -6,7 +6,10 @@ import { lapse } from 'download0/lapse'
 import { binloader_init } from 'download0/binloader'
 import { checkJailbroken } from 'download0/check-jailbroken'
 
-// Load binloader first (just defines the function, doesn't execute)
+if (jsmaf.loader_has_run) {
+  throw new Error('loader already ran')
+}
+jsmaf.loader_has_run = true
 
 // Now load userland and lapse
 // Check if libc_addr is defined
@@ -148,11 +151,9 @@ if (!is_jailbroken) {
         // Busy wait
       }
     }
-    show_success()
     const total_wait = ((Date.now() - start_time) / 1000).toFixed(1)
     log('Exploit completed successfully after ' + total_wait + ' seconds')
   }
-  // Only run binloader for lapse - netctrl handles its own
   if (use_lapse) {
     log('Initializing binloader...')
 
@@ -171,7 +172,7 @@ if (!is_jailbroken) {
   }
 } else {
   utils.notify('Already Jailbroken!')
-  include('main-menu.js')
+  try { include('main-menu.js') } catch (e) { /* escaped sandbox */ }
 }
 
 export function run_binloader () {
