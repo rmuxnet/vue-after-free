@@ -103,14 +103,14 @@ import { utils } from 'download0/types'
     statusText.text = msg
   }
 
-  function xhrGet(url: string, callback: (success: boolean, data: string) => void) {
+  function xhrGet(url: string, callback: (err: Error | null, data: string) => void) {
     var xhr = new jsmaf.XMLHttpRequest()
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
         if (xhr.status === 200 || xhr.status === 0) {
-          callback(true, xhr.responseText || '')
+          callback(null, xhr.responseText || '')
         } else {
-          callback(false, '')
+          callback(new Error('XHR failed'), '')
         }
       }
     }
@@ -185,8 +185,8 @@ import { utils } from 'download0/types'
       return
     }
 
-    xhrGet(BASE_URL + filename, function(success, content) {
-        if (success && content.length > 0) {
+    xhrGet(BASE_URL + filename, function(err, content) {
+        if (!err && content.length > 0) {
             writeFile(filename, content, function (err) {
               if (err) failed++ 
               else updated++
@@ -212,8 +212,8 @@ import { utils } from 'download0/types'
 
   function fetchManifest () {
     titleText.text = 'Updating Files...'
-    xhrGet(MANIFEST_URL, function(success, data) {
-        if (success && data) {
+    xhrGet(MANIFEST_URL, function(err, data) {
+        if (!err && data) {
           var lines = data.split('\n')
           for (var i = 0; i < lines.length; i++) {
             var line = lines[i]!.trim()
@@ -228,11 +228,11 @@ import { utils } from 'download0/types'
   }
   
   function startVersionCheck() {
-      xhrGet(LOCAL_VERSION_URL, function(success, data) {
-          localVersion = success ? data.trim() : 'NONE'
+      xhrGet(LOCAL_VERSION_URL, function(err, data) {
+          localVersion = !err ? data.trim() : 'NONE'
           
-          xhrGet(VERSION_URL, function(success, data) {
-              if (!success) {
+          xhrGet(VERSION_URL, function(err, data) {
+              if (err) {
                   log('Remote version.txt not found, forcing update.')
                   remoteVersion = 'UNKNOWN'
                   fetchManifest()
