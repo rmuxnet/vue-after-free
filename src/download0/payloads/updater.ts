@@ -9,7 +9,7 @@ import { utils } from 'download0/types'
   var VERSION_URL = BASE_URL + 'version.txt'
   var LOCAL_ROOT = 'file://../download0/'
   var LOCAL_VERSION_URL = LOCAL_ROOT + 'version.txt'
-  
+
   var ALLOWED_EXT = ['.js', '.aes', '.json', '.txt']
   var EXCLUDE = ['config.js']
 
@@ -18,7 +18,7 @@ import { utils } from 'download0/types'
   var failed = 0
   var skipped = 0
   var index = 0
-  
+
   var remoteVersion = ''
   var localVersion = ''
 
@@ -28,7 +28,7 @@ import { utils } from 'download0/types'
   var statusText: jsmaf.Text
   var titleText: jsmaf.Text
   var countText: jsmaf.Text
-  
+
   var barX = 360
   var barY = 500
   var barW = 1200
@@ -43,17 +43,12 @@ import { utils } from 'download0/types'
 
     var bg = new Image({
       url: 'file:///../download0/img/multiview_bg_VAF.png',
-      x: 0, y: 0, width: 1920, height: 1080
+      x: 0,
+      y: 0,
+      width: 1920,
+      height: 1080
     })
     jsmaf.root.children.push(bg)
-
-    var logoWidth = 400
-    var logoHeight = 225
-    var logo = new Image({
-      url: 'file:///../download0/img/logo.png',
-      x: 960 - logoWidth / 2, y: 150, width: logoWidth, height: logoHeight
-    })
-    jsmaf.root.children.push(logo)
 
     titleText = new jsmaf.Text()
     titleText.text = 'Checking Version...'
@@ -64,14 +59,20 @@ import { utils } from 'download0/types'
 
     progressBg = new Image({
       url: 'file:///assets/img/button_over_9.png',
-      x: barX, y: barY, width: barW, height: barH
+      x: barX,
+      y: barY,
+      width: barW,
+      height: barH
     })
     progressBg.alpha = 0.3
     jsmaf.root.children.push(progressBg)
 
     progressFg = new Image({
       url: 'file:///assets/img/button_over_9.png',
-      x: barX, y: barY, width: 0, height: barH
+      x: barX,
+      y: barY,
+      width: 0,
+      height: barH
     })
     progressFg.alpha = 1.0
     jsmaf.root.children.push(progressFg)
@@ -103,7 +104,7 @@ import { utils } from 'download0/types'
     statusText.text = msg
   }
 
-  function xhrGet(url: string, callback: (err: Error | null, data: string) => void) {
+  function xhrGet (url: string, callback: (err: Error | null, data: string) => void) {
     var xhr = new jsmaf.XMLHttpRequest()
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
@@ -131,9 +132,10 @@ import { utils } from 'download0/types'
 
   function checkDone () {
     updateProgress()
-    
+
+    // Ensure we save exactly what we compared against (trimmed)
     if (updated > 0 && remoteVersion.length > 0) {
-        writeFile('version.txt', remoteVersion, function(){})
+      writeFile('version.txt', remoteVersion.trim(), function () {})
     }
 
     updateStatus('Updated: ' + updated + (failed > 0 ? ', Failed: ' + failed : ''))
@@ -141,21 +143,24 @@ import { utils } from 'download0/types'
     titleText.x = 960 - 130
     log('=== Update Complete ===')
     log('Updated: ' + updated + ' | Failed: ' + failed)
-    
+
     if (failed === 0) {
       var thumbsUp = '\xF0\x9F\x91\x8D'
-      utils.notify('Update Complete! ' + thumbsUp)
+      utils.notify('Updated to ' + remoteVersion)
     }
 
     showRestartPrompt()
   }
-  
-  function showRestartPrompt() {
+
+  function showRestartPrompt () {
     var confirmKey = jsmaf.circleIsAdvanceButton ? 13 : 14
+    var backKey = jsmaf.circleIsAdvanceButton ? 14 : 13
     var buttonName = jsmaf.circleIsAdvanceButton ? 'O' : 'X'
+    var backName = jsmaf.circleIsAdvanceButton ? 'X' : 'O'
+
     var restartText = new jsmaf.Text()
-    restartText.text = 'Press ' + buttonName + ' to restart'
-    restartText.x = 960 - 100
+    restartText.text = 'Press ' + buttonName + ' to restart app, or ' + backName + ' to return'
+    restartText.x = 960 - 250
     restartText.y = barY + 120
     restartText.style = 'status'
     jsmaf.root.children.push(restartText)
@@ -164,6 +169,13 @@ import { utils } from 'download0/types'
       if (keyCode === confirmKey) {
         jsmaf.onKeyDown = function () {}
         debugging.restart()
+      } else if (keyCode === backKey) {
+        jsmaf.onKeyDown = function () {}
+        try {
+          include('main-menu.js')
+        } catch (e) {
+          log('Error returning to main menu')
+        }
       }
     }
   }
@@ -185,23 +197,23 @@ import { utils } from 'download0/types'
       return
     }
 
-    xhrGet(BASE_URL + filename, function(err, content) {
-        if (!err && content.length > 0) {
-            writeFile(filename, content, function (err) {
-              if (err) failed++ 
-              else updated++
-              
-              index++
-              jsmaf.setTimeout(processNext, 10)
-            })
-        } else {
-            failed++
-            index++
-            jsmaf.setTimeout(processNext, 10)
-        }
+    xhrGet(BASE_URL + filename, function (err, content) {
+      if (!err && content.length > 0) {
+        writeFile(filename, content, function (err) {
+          if (err) failed++
+          else updated++
+
+          index++
+          jsmaf.setTimeout(processNext, 10)
+        })
+      } else {
+        failed++
+        index++
+        jsmaf.setTimeout(processNext, 10)
+      }
     })
   }
-  
+
   function isAllowed (filename: string) {
     var lower = filename.toLowerCase()
     for (var i = 0; i < ALLOWED_EXT.length; i++) {
@@ -212,66 +224,84 @@ import { utils } from 'download0/types'
 
   function fetchManifest () {
     titleText.text = 'Updating Files...'
-    xhrGet(MANIFEST_URL, function(err, data) {
-        if (!err && data) {
-          var lines = data.split('\n')
-          for (var i = 0; i < lines.length; i++) {
-            var line = lines[i]!.trim()
-            if (line.length > 0) FILES.push(line)
-          }
-          updateStatus('Found ' + FILES.length + ' files')
-          jsmaf.setTimeout(processNext, 500)
-        } else {
-            updateStatus('ERROR: Failed to fetch manifest')
+    xhrGet(MANIFEST_URL, function (err, data) {
+      if (!err && data) {
+        var lines = data.split('\n')
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i]!.trim()
+          if (line.length > 0) FILES.push(line)
         }
+        updateStatus('Found ' + FILES.length + ' files')
+        jsmaf.setTimeout(processNext, 500)
+      } else {
+        updateStatus('ERROR: Failed to fetch manifest')
+      }
     })
   }
-  
-  function startVersionCheck() {
-      xhrGet(LOCAL_VERSION_URL, function(err, data) {
-          localVersion = !err ? data.trim() : 'NONE'
-          
-          xhrGet(VERSION_URL, function(err, data) {
-              if (err) {
-                  log('Remote version.txt not found, forcing update.')
-                  remoteVersion = 'UNKNOWN'
-                  fetchManifest()
-                  return
-              }
-              
-              remoteVersion = data.trim()
-              log('Ver Check: Local=' + localVersion + ' Remote=' + remoteVersion)
-              
-              if (localVersion === remoteVersion && localVersion !== 'NONE') {
-                  titleText.text = 'Already Up to Date!'
-                  statusText.text = 'Version: ' + localVersion
-                  progressFg.width = barW
-                  
-                  var forceText = new jsmaf.Text()
-                  forceText.text = 'Press Square (\u25A1) to force update'
-                  forceText.x = barX
-                  forceText.y = barY + 120
-                  forceText.style = 'status'
-                  jsmaf.root.children.push(forceText)
-                  
-                  jsmaf.onKeyDown = function(keyCode) {
-                      if (keyCode === 3) { 
-                          jsmaf.onKeyDown = function(){}
-                          forceText.text = ''
-                          fetchManifest()
-                      } else {
-                          var confirmKey = jsmaf.circleIsAdvanceButton ? 13 : 14
-                          if (keyCode === confirmKey) debugging.restart()
-                      }
-                  }
-                  
-                  showRestartPrompt()
-              } else {
-                  updateStatus('New version found! Starting update...')
-                  jsmaf.setTimeout(fetchManifest, 1000)
-              }
-          })
+
+  function startVersionCheck () {
+    xhrGet(LOCAL_VERSION_URL, function (err, data) {
+      // Ensure we trim local read to avoid mismatch due to newlines
+      localVersion = !err ? data.trim() : 'NONE'
+
+      xhrGet(VERSION_URL, function (err, data) {
+        if (err) {
+          log('Remote version.txt not found, forcing update.')
+          remoteVersion = 'UNKNOWN'
+          fetchManifest()
+          return
+        }
+
+        remoteVersion = data.trim()
+        log('Ver Check: Local="' + localVersion + '" Remote="' + remoteVersion + '"')
+
+        // Direct string comparison works fine even with hash (e.g. "v1.4.1 (abc)")
+        // as long as the file written to disk matches the remote file exactly.
+        if (localVersion === remoteVersion && localVersion !== 'NONE') {
+          titleText.text = 'Already Up to Date!'
+          statusText.text = 'Version: ' + localVersion
+          progressFg.width = barW
+
+          var forceText = new jsmaf.Text()
+          forceText.text = 'Press Square (\u25A1) to force update'
+          forceText.x = barX
+          forceText.y = barY + 80
+          forceText.style = 'status'
+          jsmaf.root.children.push(forceText)
+
+          // Reuse the restart prompt logic but add Square handler
+          var confirmKey = jsmaf.circleIsAdvanceButton ? 13 : 14
+          var backKey = jsmaf.circleIsAdvanceButton ? 14 : 13
+          var buttonName = jsmaf.circleIsAdvanceButton ? 'O' : 'X'
+          var backName = jsmaf.circleIsAdvanceButton ? 'X' : 'O'
+
+          var restartText = new jsmaf.Text()
+          restartText.text = 'Press ' + buttonName + ' to restart app, or ' + backName + ' to return'
+          restartText.x = 960 - 250
+          restartText.y = barY + 140
+          restartText.style = 'status'
+          jsmaf.root.children.push(restartText)
+
+          jsmaf.onKeyDown = function (keyCode) {
+            // Square can vary in mapping (1, 3, or 10 often used)
+            if (keyCode === 3 || keyCode === 1 || keyCode === 10) { // Square
+              jsmaf.onKeyDown = function () {}
+              forceText.text = ''
+              restartText.text = ''
+              fetchManifest()
+            } else if (keyCode === confirmKey) {
+              debugging.restart()
+            } else if (keyCode === backKey) {
+              jsmaf.onKeyDown = function () {}
+              try { include('main-menu.js') } catch (e) { }
+            }
+          }
+        } else {
+          updateStatus('New version found! Starting update...')
+          jsmaf.setTimeout(fetchManifest, 1000)
+        }
       })
+    })
   }
 
   initUI()

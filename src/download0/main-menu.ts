@@ -1,26 +1,37 @@
-import { lang, useImageText, textImageBase } from 'download0/languages'
+import { lang } from 'download0/languages'
 import { libc_addr } from 'download0/userland'
 import { fn, BigInt } from 'download0/types'
-import { APP_VERSION } from 'download0/defs'
 
 (function () {
   include('languages.js')
   log(lang.loadingMainMenu)
 
-  let currentButton = 0
-  const buttons: Image[] = []
-  const buttonTexts: jsmaf.Text[] = []
-  const buttonMarkers: Image[] = []
-  const buttonOrigPos: { x: number, y: number }[] = []
-  const textOrigPos: { x: number, y: number }[] = []
+  // Fix: APP_VERSION error. Use local variable and try to read file.
+  // We use the fallback initially, but reading version.txt dictates the display.
+  // Although 1.4.2 is hardcoded here as a fallback, the app prefers version.txt
+  let appVersion = '1.4.2'
+  try {
+    const xhr = new jsmaf.XMLHttpRequest()
+    // Read from the relative path where updater saves it
+    xhr.open('GET', 'file://../download0/version.txt', false)
+    xhr.send()
+    if (xhr.status === 200 || xhr.status === 0) {
+      if (xhr.responseText && xhr.responseText.length > 0) {
+        appVersion = xhr.responseText.trim()
+      }
+    }
+  } catch (e) {
+    log('Failed to load version.txt: ' + (e as Error).message)
+  }
 
-  const normalButtonImg = 'file:///assets/img/button_over_9.png'
-  const selectedButtonImg = 'file:///assets/img/button_over_9.png'
+  let currentButton = 0
+  const buttons: jsmaf.Text[] = []
 
   jsmaf.root.children.length = 0
 
-  new Style({ name: 'white', color: 'white', size: 24 })
-  new Style({ name: 'title', color: 'white', size: 32 })
+  new Style({ name: 'white', color: '#e0e0e0', size: 30 })
+  new Style({ name: 'selected', color: '#4fc3f7', size: 36 })
+  new Style({ name: 'version', color: '#888888', size: 18 })
 
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
@@ -31,248 +42,58 @@ import { APP_VERSION } from 'download0/defs'
   })
   jsmaf.root.children.push(background)
 
-  const centerX = 960
-  const logoWidth = 600
-  const logoHeight = 338
-
-  const logo = new Image({
-    url: 'file:///../download0/img/logo.png',
-    x: centerX - logoWidth / 2,
-    y: 50,
-    width: logoWidth,
-    height: logoHeight
-  })
-  jsmaf.root.children.push(logo)
-
   const verText = new jsmaf.Text()
-  verText.text = APP_VERSION
-  verText.x = 20
-  verText.y = 1040
-  verText.style = 'white'
+  verText.text = appVersion
+  verText.x = 1750
+  verText.y = 1030
+  verText.style = 'version'
   jsmaf.root.children.push(verText)
 
   const menuOptions = [
-    { label: lang.jailbreak, script: 'loader.js', imgKey: 'jailbreak' },
-    { label: lang.payloadMenu, script: 'payload_host.js', imgKey: 'payloadMenu' },
-    { label: lang.config, script: 'config_ui.js', imgKey: 'config' }
+    { label: lang.jailbreak, script: 'loader.js' },
+    { label: lang.payloadMenu, script: 'payload_host.js' },
+    { label: lang.config, script: 'config_ui.js' },
+    { label: lang.webUi, script: 'web-ui.js' },
+    { label: lang.updater, script: 'payloads/updater.js' }
   ]
 
-  const startY = 450
-  const buttonSpacing = 120
-  const buttonWidth = 400
-  const buttonHeight = 80
+  const listX = 120
+  const startY = 350
+  const spacing = 80
 
   for (let i = 0; i < menuOptions.length; i++) {
-    const btnX = centerX - buttonWidth / 2
-    const btnY = startY + i * buttonSpacing
-
-    const button = new Image({
-      url: normalButtonImg,
-      x: btnX,
-      y: btnY,
-      width: buttonWidth,
-      height: buttonHeight
-    })
-    buttons.push(button)
-    jsmaf.root.children.push(button)
-
-    const marker = new Image({
-      url: 'file:///assets/img/ad_pod_marker.png',
-      x: btnX + buttonWidth - 50,
-      y: btnY + 35,
-      width: 12,
-      height: 12,
-      visible: false
-    })
-    buttonMarkers.push(marker)
-    jsmaf.root.children.push(marker)
-
-    let btnText: Image | jsmaf.Text
-    if (useImageText) {
-      btnText = new Image({
-        url: textImageBase + menuOptions[i]!.imgKey + '.png',
-        x: btnX + 20,
-        y: btnY + 15,
-        width: 300,
-        height: 50
-      })
-    } else {
-      btnText = new jsmaf.Text()
-      btnText.text = menuOptions[i]!.label
-      btnText.x = btnX + buttonWidth / 2 - 60
-      btnText.y = btnY + buttonHeight / 2 - 12
-      btnText.style = 'white'
-    }
-    buttonTexts.push(btnText)
-    jsmaf.root.children.push(btnText)
-
-    buttonOrigPos.push({ x: btnX, y: btnY })
-    textOrigPos.push({ x: btnText.x, y: btnText.y })
+    const btn = new jsmaf.Text()
+    btn.text = menuOptions[i]!.label
+    btn.x = listX
+    btn.y = startY + i * spacing
+    btn.style = 'white'
+    buttons.push(btn)
+    jsmaf.root.children.push(btn)
   }
 
-  const exitX = centerX - buttonWidth / 2
-  const exitY = startY + menuOptions.length * buttonSpacing + 100
+  const exitBtn = new jsmaf.Text()
+  exitBtn.text = lang.exit
+  exitBtn.x = listX
+  exitBtn.y = startY + menuOptions.length * spacing + 60
+  exitBtn.style = 'white'
+  buttons.push(exitBtn)
+  jsmaf.root.children.push(exitBtn)
 
-  const exitButton = new Image({
-    url: normalButtonImg,
-    x: exitX,
-    y: exitY,
-    width: buttonWidth,
-    height: buttonHeight
-  })
-  buttons.push(exitButton)
-  jsmaf.root.children.push(exitButton)
-
-  const exitMarker = new Image({
-    url: 'file:///assets/img/ad_pod_marker.png',
-    x: exitX + buttonWidth - 50,
-    y: exitY + 35,
-    width: 12,
-    height: 12,
-    visible: false
-  })
-  buttonMarkers.push(exitMarker)
-  jsmaf.root.children.push(exitMarker)
-
-  let exitText: Image | jsmaf.Text
-  if (useImageText) {
-    exitText = new Image({
-      url: textImageBase + 'exit.png',
-      x: exitX + 20,
-      y: exitY + 15,
-      width: 300,
-      height: 50
-    })
-  } else {
-    exitText = new jsmaf.Text()
-    exitText.text = lang.exit
-    exitText.x = exitX + buttonWidth / 2 - 20
-    exitText.y = exitY + buttonHeight / 2 - 12
-    exitText.style = 'white'
-  }
-  buttonTexts.push(exitText)
-  jsmaf.root.children.push(exitText)
-
-  buttonOrigPos.push({ x: exitX, y: exitY })
-  textOrigPos.push({ x: exitText.x, y: exitText.y })
-
-  let zoomInInterval: number | null = null
-  let zoomOutInterval: number | null = null
   let prevButton = -1
 
-  function easeInOut (t: number) {
-    return (1 - Math.cos(t * Math.PI)) / 2
-  }
-
-  function animateZoomIn (btn: Image, text: jsmaf.Text, btnOrigX: number, btnOrigY: number, textOrigX: number, textOrigY: number) {
-    if (zoomInInterval) jsmaf.clearInterval(zoomInInterval)
-    const btnW = buttonWidth
-    const btnH = buttonHeight
-    const startScale = btn.scaleX || 1.0
-    const endScale = 1.1
-    const duration = 175
-    let elapsed = 0
-    const step = 16
-
-    zoomInInterval = jsmaf.setInterval(function () {
-      elapsed += step
-      const t = Math.min(elapsed / duration, 1)
-      const eased = easeInOut(t)
-      const scale = startScale + (endScale - startScale) * eased
-
-      btn.scaleX = scale
-      btn.scaleY = scale
-      btn.x = btnOrigX - (btnW * (scale - 1)) / 2
-      btn.y = btnOrigY - (btnH * (scale - 1)) / 2
-      text.scaleX = scale
-      text.scaleY = scale
-      text.x = textOrigX - (btnW * (scale - 1)) / 2
-      text.y = textOrigY - (btnH * (scale - 1)) / 2
-
-      if (t >= 1 && zoomInInterval) {
-        jsmaf.clearInterval(zoomInInterval)
-        zoomInInterval = null
-      }
-    }, step)
-  }
-
-  function animateZoomOut (btn: Image, text: jsmaf.Text, btnOrigX: number, btnOrigY: number, textOrigX: number, textOrigY: number) {
-    if (zoomOutInterval) jsmaf.clearInterval(zoomOutInterval)
-    const btnW = buttonWidth
-    const btnH = buttonHeight
-    const startScale = btn.scaleX || 1.1
-    const endScale = 1.0
-    const duration = 175
-    let elapsed = 0
-    const step = 16
-
-    zoomOutInterval = jsmaf.setInterval(function () {
-      elapsed += step
-      const t = Math.min(elapsed / duration, 1)
-      const eased = easeInOut(t)
-      const scale = startScale + (endScale - startScale) * eased
-
-      btn.scaleX = scale
-      btn.scaleY = scale
-      btn.x = btnOrigX - (btnW * (scale - 1)) / 2
-      btn.y = btnOrigY - (btnH * (scale - 1)) / 2
-      text.scaleX = scale
-      text.scaleY = scale
-      text.x = textOrigX - (btnW * (scale - 1)) / 2
-      text.y = textOrigY - (btnH * (scale - 1)) / 2
-
-      if (t >= 1 && zoomOutInterval) {
-        jsmaf.clearInterval(zoomOutInterval)
-        zoomOutInterval = null
-      }
-    }, step)
-  }
-
   function updateHighlight () {
-    // Animate out the previous button
-    const prevButtonObj = buttons[prevButton]
-    const buttonMarker = buttonMarkers[prevButton]
-    if (prevButton >= 0 && prevButton !== currentButton && prevButtonObj && buttonMarker) {
-      prevButtonObj.url = normalButtonImg
-      prevButtonObj.alpha = 0.7
-      prevButtonObj.borderColor = 'transparent'
-      prevButtonObj.borderWidth = 0
-      buttonMarker.visible = false
-      animateZoomOut(prevButtonObj, buttonTexts[prevButton]!, buttonOrigPos[prevButton]!.x, buttonOrigPos[prevButton]!.y, textOrigPos[prevButton]!.x, textOrigPos[prevButton]!.y)
-    }
-
-    // Set styles for all buttons
     for (let i = 0; i < buttons.length; i++) {
-      const button = buttons[i]
-      const buttonMarker = buttonMarkers[i]
-      const buttonText = buttonTexts[i]
-      const buttonOrigPos_ = buttonOrigPos[i]
-      const textOrigPos_ = textOrigPos[i]
-      if (button === undefined || buttonText === undefined || buttonOrigPos_ === undefined || textOrigPos_ === undefined || buttonMarker === undefined) continue
+      const btn = buttons[i]
+      if (!btn) continue
+
       if (i === currentButton) {
-        button.url = selectedButtonImg
-        button.alpha = 1.0
-        button.borderColor = 'rgb(100,180,255)'
-        button.borderWidth = 3
-        buttonMarker.visible = true
-        animateZoomIn(button, buttonText, buttonOrigPos_.x, buttonOrigPos_.y, textOrigPos_.x, textOrigPos_.y)
-      } else if (i !== prevButton) {
-        button.url = normalButtonImg
-        button.alpha = 0.7
-        button.borderColor = 'transparent'
-        button.borderWidth = 0
-        button.scaleX = 1.0
-        button.scaleY = 1.0
-        button.x = buttonOrigPos_.x
-        button.y = buttonOrigPos_.y
-        buttonText.scaleX = 1.0
-        buttonText.scaleY = 1.0
-        buttonText.x = textOrigPos_.x
-        buttonText.y = textOrigPos_.y
-        buttonMarker.visible = false
+        btn.style = 'selected'
+        btn.x = listX + 25 // Indent selected item
+      } else {
+        btn.style = 'white'
+        btn.x = listX
       }
     }
-
     prevButton = currentButton
   }
 
@@ -316,7 +137,17 @@ import { APP_VERSION } from 'download0/defs'
     }
   }
 
+  updateHighlight()
+
+  // Prevent accidental double clicks / buffered input from triggering options immediately
+  let inputReady = false
+  setTimeout(function () {
+    inputReady = true
+  }, 500)
+
   jsmaf.onKeyDown = function (keyCode) {
+    if (!inputReady) return
+
     if (keyCode === 6 || keyCode === 5) {
       currentButton = (currentButton + 1) % buttons.length
       updateHighlight()

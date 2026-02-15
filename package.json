@@ -1,6 +1,6 @@
 {
   "name": "vue-after-free",
-  "version": "1.4.0-mod",
+  "version": "1.4.2",
   "module": "index.ts",
   "type": "module",
   "private": true,

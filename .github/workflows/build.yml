@@ -37,7 +37,7 @@ jobs:
 
       - name: Replace version string
         run: |
-          VERSION_STR="v${{ env.VERSION }} (${{ env.SHORT_SHA }})"
+          VERSION_STR="v${{ env.VERSION }}"
           find ./dist -type f -name '*.js' -exec sed -i "s/%VERSION_STRING%/$VERSION_STR/g" {} +
 
       - name: Copy assets to dist

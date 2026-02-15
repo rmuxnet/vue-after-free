@@ -7,6 +7,8 @@ export const lang: Record<string, string> = {
   config: 'Config',
   exit: 'Exit',
   back: 'Back',
+  webUi: 'Web UI',
+  updater: 'Updater',
   autoLapse: 'Auto Lapse',
   autoPoop: 'Auto Poop',
   autoClose: 'Auto Close',
@@ -27,17 +29,8 @@ export const lang: Record<string, string> = {
   configLoaded: 'Config UI loaded'
 }
 
-export let useImageText = false
-export let textImageBase = ''
-
 const detectedLocale = jsmaf.locale || 'en'
 log('Detected locale: ' + detectedLocale)
-
-const IMAGE_TEXT_LOCALES = ['ar', 'ja', 'ko', 'zh']
-if (IMAGE_TEXT_LOCALES.includes(detectedLocale)) {
-  useImageText = true
-  textImageBase = 'file:///../download0/img/text/' + detectedLocale + '/'
-}
 
 switch (detectedLocale) {
   case 'es':
@@ -47,6 +40,8 @@ switch (detectedLocale) {
     lang.config = 'Configuracion'
     lang.exit = 'Salir'
     lang.back = 'Volver'
+    lang.webUi = 'Interfaz Web'
+    lang.updater = 'Actualizar'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'Auto Cerrar'
@@ -137,6 +132,8 @@ switch (detectedLocale) {
     lang.config = 'Configuracao'
     lang.exit = 'Sair'
     lang.back = 'Voltar'
+    lang.webUi = 'Interface Web'
+    lang.updater = 'Atualizar'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'Fechar Auto'
@@ -164,6 +161,8 @@ switch (detectedLocale) {
     lang.config = 'Configuration'
     lang.exit = 'Quitter'
     lang.back = 'Retour'
+    lang.webUi = 'Interface Web'
+    lang.updater = 'Mise a jour'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'Fermer Auto'
@@ -191,6 +190,8 @@ switch (detectedLocale) {
     lang.config = 'Einstellungen'
     lang.exit = 'Beenden'
     lang.back = 'Zuruck'
+    lang.webUi = 'Weboberflache'
+    lang.updater = 'Aktualisierung'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'Auto Schliessen'
@@ -218,6 +219,8 @@ switch (detectedLocale) {
     lang.config = 'Configurazione'
     lang.exit = 'Esci'
     lang.back = 'Indietro'
+    lang.webUi = 'Interfaccia Web'
+    lang.updater = 'Aggiornamento'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'Chiudi Auto'
@@ -245,6 +248,8 @@ switch (detectedLocale) {
     lang.config = 'Instellingen'
     lang.exit = 'Afsluiten'
     lang.back = 'Terug'
+    lang.webUi = 'Web UI'
+    lang.updater = 'Update'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'Auto Sluiten'
@@ -272,6 +277,8 @@ switch (detectedLocale) {
     lang.config = 'Konfiguracja'
     lang.exit = 'Wyjscie'
     lang.back = 'Wstecz'
+    lang.webUi = 'Interfejs Web'
+    lang.updater = 'Aktualizacja'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'Auto Zamknij'
@@ -299,6 +306,8 @@ switch (detectedLocale) {
     lang.config = 'Ayarlar'
     lang.exit = 'Cikis'
     lang.back = 'Geri'
+    lang.webUi = 'Web Arayuzu'
+    lang.updater = 'Guncelleme'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'Otomatik Kapat'
@@ -326,6 +335,8 @@ switch (detectedLocale) {
     lang.config = 'الاعدادات'
     lang.exit = 'خروج'
     lang.back = 'رجوع'
+    lang.webUi = 'واجهة الويب'
+    lang.updater = 'تحديث'
     lang.autoLapse = 'Auto Lapse'
     lang.autoPoop = 'Auto Poop'
     lang.autoClose = 'اغلاق تلقائي'
@@ -353,6 +364,8 @@ switch (detectedLocale) {
     lang.config = '設定'
     lang.exit = '終了'
     lang.back = '戻る'
+    lang.webUi = 'Web UI'
+    lang.updater = '更新'
     lang.autoLapse = '自動Lapse'
     lang.autoPoop = '自動Poop'
     lang.autoClose = '自動終了'
@@ -380,6 +393,8 @@ switch (detectedLocale) {
     lang.config = '설정'
     lang.exit = '종료'
     lang.back = '뒤로'
+    lang.webUi = '웹 UI'
+    lang.updater = '업데이트'
     lang.autoLapse = '자동 Lapse'
     lang.autoPoop = '자동 Poop'
     lang.autoClose = '자동 닫기'
@@ -407,6 +422,8 @@ switch (detectedLocale) {
     lang.config = '设置'
     lang.exit = '退出'
     lang.back = '返回'
+    lang.webUi = 'Web界面'
+    lang.updater = '更新'
     lang.autoLapse = '自动Lapse'
     lang.autoPoop = '自动Poop'
     lang.autoClose = '自动关闭'
