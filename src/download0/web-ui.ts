@@ -130,7 +130,7 @@ if (detect_fd.lo >= 0) {
 // Build HTML
 let fileListHtml = ''
 for (const f of js_files) {
-    fileListHtml += `<button onclick="runFile('${f}')" style="font-size:16px;padding:10px;margin:5px;">${f}</button><br>`
+  fileListHtml += `<button onclick="runFile('${f}')" style="font-size:16px;padding:10px;margin:5px;">${f}</button><br>`
 }
 
 const html = `<!DOCTYPE html>
@@ -175,7 +175,6 @@ function runFile(f) {
 </script>
 </body>
 </html>`
-
 
 // Create Server
 // create server socket
@@ -227,7 +226,6 @@ try {
   log('couldnt open browser: ' + (e as Error).message)
 }
 
-
 // Show info on screen
 jsmaf.root.children.length = 0
 new Style({ name: 'infobig', color: '#ffffff', size: 40 })
@@ -236,10 +234,9 @@ new Style({ name: 'infosmall', color: '#aaaaaa', size: 26 })
 const bg = new Image({ url: 'file:///../download0/img/multiview_bg_VAF.png', x: 0, y: 0, width: 1920, height: 1080 })
 jsmaf.root.children.push(bg)
 
-const t1 = new jsmaf.Text(); t1.text = 'Web UI Running'; t1.x = 100; t1.y = 100; t1.style='infobig'; jsmaf.root.children.push(t1);
-const t2 = new jsmaf.Text(); t2.text = 'http://' + local_ip + ':' + port; t2.x = 100; t2.y = 160; t2.style='infobig'; jsmaf.root.children.push(t2);
-const t3 = new jsmaf.Text(); t3.text = 'Open this URL on your PC/Phone'; t3.x = 100; t3.y = 220; t3.style='infosmall'; jsmaf.root.children.push(t3);
-
+const t1 = new jsmaf.Text(); t1.text = 'Web UI Running'; t1.x = 100; t1.y = 100; t1.style = 'infobig'; jsmaf.root.children.push(t1)
+const t2 = new jsmaf.Text(); t2.text = 'http://' + local_ip + ':' + port; t2.x = 100; t2.y = 160; t2.style = 'infobig'; jsmaf.root.children.push(t2)
+const t3 = new jsmaf.Text(); t3.text = 'Open this URL on your PC/Phone'; t3.x = 100; t3.y = 220; t3.style = 'infosmall'; jsmaf.root.children.push(t3)
 
 function send_response (fd: BigInt, body: string) {
   const resp = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ' + body.length + '\r\nConnection: close\r\n\r\n' + body
@@ -276,51 +273,51 @@ const client_addr = mem.malloc(16)
 const client_len = mem.malloc(4)
 const req_buf = mem.malloc(4096)
 
-function handleRequest() {
-    if(!serverRunning) return
+function handleRequest () {
+  if (!serverRunning) return
 
-    for (let i = 0; i < 128; i++) mem.view(readfds).setUint8(i, 0)
-    const fd = srv.lo
-    mem.view(readfds).setUint8(Math.floor(fd/8), mem.view(readfds).getUint8(Math.floor(fd/8)) | (1 << (fd%8)))
+  for (let i = 0; i < 128; i++) mem.view(readfds).setUint8(i, 0)
+  const fd = srv.lo
+  mem.view(readfds).setUint8(Math.floor(fd / 8), mem.view(readfds).getUint8(Math.floor(fd / 8)) | (1 << (fd % 8)))
 
-    const nfds = fd + 1
-    const select_ret = select_sys(new BigInt(0, nfds), readfds, new BigInt(0, 0), new BigInt(0, 0), timeout)
-    
-    // No connection ready
-    if (select_ret.lo <= 0) return
+  const nfds = fd + 1
+  const select_ret = select_sys(new BigInt(0, nfds), readfds, new BigInt(0, 0), new BigInt(0, 0), timeout)
 
-    mem.view(client_len).setUint32(0, 16, true)
-    const client_ret = accept_sys(srv, client_addr, client_len)
-    const client = client_ret instanceof BigInt ? client_ret.lo : client_ret
+  // No connection ready
+  if (select_ret.lo <= 0) return
 
-    if (client < 0) {
-        log('accept failed: ' + client)
-        return
-    }
+  mem.view(client_len).setUint32(0, 16, true)
+  const client_ret = accept_sys(srv, client_addr, client_len)
+  const client = client_ret instanceof BigInt ? client_ret.lo : client_ret
 
-    count++
-    log('')
-    log('[' + count + '] client connected')
+  if (client < 0) {
+    log('accept failed: ' + client)
+    return
+  }
 
-    const r = read_sys(new BigInt(client), req_buf, new BigInt(0, 4096))
-    const bytes = r instanceof BigInt ? r.lo : r
-    
-    const path = get_path(req_buf, bytes)
-    log('path: ' + path)
-    
-    if (path === '/load') {
-        send_response(new BigInt(client), 'Running Loader...')
-        close_sys(new BigInt(client))
-        try { include('loader.js') } catch(e) { log('Error: ' + e.message) }
-    } else if (path?.indexOf('/load/') === 0) {
-        const fname = path.substring(6)
-        send_response(new BigInt(client), 'Running ' + fname)
-        close_sys(new BigInt(client))
-        try { include('download0/payloads/' + fname) } catch(e) { log('Error: ' + e.message) }
-    } else {
-        send_response(new BigInt(client), html)
-        close_sys(new BigInt(client))
-    }
+  count++
+  log('')
+  log('[' + count + '] client connected')
+
+  const r = read_sys(new BigInt(client), req_buf, new BigInt(0, 4096))
+  const bytes = r instanceof BigInt ? r.lo : r
+
+  const path = get_path(req_buf, bytes)
+  log('path: ' + path)
+
+  if (path === '/load') {
+    send_response(new BigInt(client), 'Running Loader...')
+    close_sys(new BigInt(client))
+    try { include('loader.js') } catch (e) { log('Error: ' + e.message) }
+  } else if (path?.indexOf('/load/') === 0) {
+    const fname = path.substring(6)
+    send_response(new BigInt(client), 'Running ' + fname)
+    close_sys(new BigInt(client))
+    try { include('download0/payloads/' + fname) } catch (e) { log('Error: ' + e.message) }
+  } else {
+    send_response(new BigInt(client), html)
+    close_sys(new BigInt(client))
+  }
 }
 
 jsmaf.onEnterFrame = handleRequest
@@ -331,6 +328,6 @@ jsmaf.onKeyDown = function (k) {
     close_sys(srv)
     jsmaf.onEnterFrame = null
     jsmaf.onKeyDown = null
-    try { include('main-menu.js') } catch(e) {}
+    try { include('main-menu.js') } catch (e) {}
   }
 }

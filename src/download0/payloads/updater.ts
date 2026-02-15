@@ -133,9 +133,15 @@ import { utils } from 'download0/types'
   function checkDone () {
     updateProgress()
 
+    log('Entering checkDone. Updated: ' + updated + ', Failed: ' + failed)
+
     // Ensure we save exactly what we compared against (trimmed)
     if (updated > 0 && remoteVersion.length > 0) {
-      writeFile('version.txt', remoteVersion.trim(), function () {})
+      log('Saving version.txt...')
+      writeFile('version.txt', remoteVersion.trim(), function (err) {
+        if (err) log('Warning: Failed to save version.txt')
+        else log('version.txt saved successfully')
+      })
     }
 
     updateStatus('Updated: ' + updated + (failed > 0 ? ', Failed: ' + failed : ''))
@@ -144,15 +150,50 @@ import { utils } from 'download0/types'
     log('=== Update Complete ===')
     log('Updated: ' + updated + ' | Failed: ' + failed)
 
-    if (failed === 0) {
-      var thumbsUp = '\xF0\x9F\x91\x8D'
-      utils.notify('Updated to ' + remoteVersion)
+    // Check directly against 0
+    if (failed <= 0) {
+      log('No failures detected. Proceeding to auto-restart sequence.')
+
+      try {
+        utils.notify('Updated to ' + remoteVersion)
+      } catch (e) {
+        log('Notification failed: ' + e)
+      }
+
+      log('Update success condition met. Preparing auto-restart...')
+
+      updateStatus('Auto-restarting in 3 seconds...')
+
+      // Clear key listeners to prevent interference during countdown
+      log('Clearing key listeners...')
+      jsmaf.onKeyDown = function () {}
+
+      log('Setting timeout for restart (3000ms)...')
+      jsmaf.setTimeout(function () {
+        try {
+          titleText.text = 'Restarting...'
+        } catch (e) {}
+
+        log('Executing debugging.restart()...')
+        // Small delay to ensure text updates before the process kill happens
+        jsmaf.setTimeout(function () {
+          try {
+            log('Calling debugging.restart() NOW.')
+            debugging.restart()
+          } catch (e) {
+            log('FATAL: debugging.restart() threw exception: ' + e)
+          }
+        }, 100)
+      }, 3000)
+      return
     }
 
+    log('Update had failures (or was 0?), showing manual restart prompt.')
     showRestartPrompt()
   }
 
   function showRestartPrompt () {
+    log('Entering showRestartPrompt()...')
     var confirmKey = jsmaf.circleIsAdvanceButton ? 13 : 14
     var backKey = jsmaf.circleIsAdvanceButton ? 14 : 13
     var buttonName = jsmaf.circleIsAdvanceButton ? 'O' : 'X'
@@ -164,17 +205,21 @@ import { utils } from 'download0/types'
     restartText.y = barY + 120
     restartText.style = 'status'
     jsmaf.root.children.push(restartText)
+    log('Restart prompt UI added.')
 
     jsmaf.onKeyDown = function (keyCode: number) {
+      log('Key pressed in restart prompt: ' + keyCode)
       if (keyCode === confirmKey) {
+        log('Confirm key pressed. Restarting...')
         jsmaf.onKeyDown = function () {}
         debugging.restart()
       } else if (keyCode === backKey) {
+        log('Back key pressed. Loading main menu...')
         jsmaf.onKeyDown = function () {}
         try {
           include('main-menu.js')
         } catch (e) {
-          log('Error returning to main menu')
+          log('Error returning to main menu: ' + e)
         }
       }
     }
@@ -282,16 +327,22 @@ import { utils } from 'download0/types'
           restartText.style = 'status'
           jsmaf.root.children.push(restartText)
 
+          log('Waiting for user input (Square/Confirm/Back)...')
+
           jsmaf.onKeyDown = function (keyCode) {
-            // Square can vary in mapping (1, 3, or 10 often used)
-            if (keyCode === 3 || keyCode === 1 || keyCode === 10) { // Square
+            log('Key pressed in Up-To-Date menu: ' + keyCode)
+            // Square confirmed as 15
+            if (keyCode === 15) { // Square
+              log('Square detected. Forcing manifest fetch...')
               jsmaf.onKeyDown = function () {}
               forceText.text = ''
               restartText.text = ''
               fetchManifest()
             } else if (keyCode === confirmKey) {
+              log('Confirm detected. Restarting...')
               debugging.restart()
             } else if (keyCode === backKey) {
+              log('Back detected. Returning to main menu...')
               jsmaf.onKeyDown = function () {}
               try { include('main-menu.js') } catch (e) { }
             }
