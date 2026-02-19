@@ -81,7 +81,7 @@ import { fn, BigInt } from 'download0/types'
 
   let prevButton = -1
 
-  function updateHighlight() {
+  function updateHighlight () {
     for (let i = 0; i < buttons.length; i++) {
       const btn = buttons[i]
       if (!btn) continue
@@ -97,7 +97,7 @@ import { fn, BigInt } from 'download0/types'
     prevButton = currentButton
   }
 
-  function handleButtonPress() {
+  function handleButtonPress () {
     if (currentButton === buttons.length - 1) {
       log('Exiting application...')
       try {
