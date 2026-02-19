@@ -9,7 +9,7 @@ if (typeof libc_addr === 'undefined') {
   include('userland.js')
 }
 include('kernel.js')
-include('stats-tracker.js')
+
 include('binloader.js')
 if (!String.prototype.padStart) {
   String.prototype.padStart = function padStart (targetLength, padString) {
@@ -940,14 +940,7 @@ const LOG_COLORS = [
 function setup_log_screen () {
   jsmaf.root.children.length = 0
 
-  const bg = new Image({
-    url: 'file:///../download0/img/multiview_bg_VAF.png',
-    x: 0,
-    y: 0,
-    width: 1920,
-    height: 1080
-  })
-  jsmaf.root.children.push(bg)
+  // Removed bg Image allocation for debloat/stability
 
   for (let i = 0; i < LOG_COLORS.length; i++) {
     new Style({ name: 'log' + i, color: LOG_COLORS[i], size: 20 })

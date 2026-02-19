@@ -1,5 +1,5 @@
 import { libc_addr } from 'download0/userland'
-import { stats } from 'download0/stats-tracker'
+
 import { lang } from 'download0/languages'
 
 if (typeof libc_addr === 'undefined') {
@@ -68,7 +68,6 @@ if (typeof lang === 'undefined') {
   new Style({ name: 'val_active', color: '#a5d6a7', size: 30 }) // Light green for ON
   new Style({ name: 'val_inactive', color: '#ef9a9a', size: 30 }) // Light red for OFF
   new Style({ name: 'title', color: '#ffffff', size: 32 })
-  new Style({ name: 'stats', color: '#bbbbbb', size: 22 })
 
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
@@ -85,28 +84,6 @@ if (typeof lang === 'undefined') {
   title.y = 100
   title.style = 'title'
   jsmaf.root.children.push(title)
-
-  // Include the stats tracker
-  include('stats-tracker.js')
-
-  // Load and display stats
-  stats.load()
-  const statsData = stats.get()
-
-  // Create text elements for each stat
-  const statsLabels = [lang.totalAttempts, lang.successes, lang.failures, lang.successRate, lang.failureRate]
-  const statsValues = [statsData.total, statsData.success, statsData.failures, statsData.successRate, statsData.failureRate]
-
-  // Display each stat line (Top Right area now)
-  for (let i = 0; i < statsLabels.length; i++) {
-    const yPos = 100 + (i * 35)
-    const lineText = new jsmaf.Text()
-    lineText.text = statsLabels[i] + statsValues[i]
-    lineText.x = 1300
-    lineText.y = yPos
-    lineText.style = 'stats'
-    jsmaf.root.children.push(lineText)
-  }
 
   const configOptions = [
     { key: 'autolapse', label: lang.autoLapse, type: 'toggle' },
@@ -322,7 +299,7 @@ if (typeof lang === 'undefined') {
     } else if (keyCode === 13) {
       log('Going back to main menu...')
       // Unbind key handler before leaving
-      jsmaf.onKeyDown = function () {}
+      jsmaf.onKeyDown = function () { }
       try {
         include('main-menu.js')
       } catch (e) { /* ignore */ }

@@ -1326,8 +1326,8 @@ const ipv6_kernel_rw: {
   },
   copyout: function (kaddr: BigInt, uaddr: BigInt, len: BigInt) {
     if (kaddr === null || kaddr === undefined ||
-          uaddr === null || uaddr === undefined ||
-          len === null || len === undefined || len.eq(0)) {
+      uaddr === null || uaddr === undefined ||
+      len === null || len === undefined || len.eq(0)) {
       throw new Error('copyout: invalid arguments')
     }
     if (!ipv6_kernel_rw.data.pipe_read_fd || !ipv6_kernel_rw.data.pipemap_buffer || !ipv6_kernel_rw.data.pipe_addr) {
@@ -1348,8 +1348,8 @@ const ipv6_kernel_rw: {
   },
   copyin: function (uaddr: BigInt, kaddr: BigInt, len: BigInt) {
     if (kaddr === null || kaddr === undefined ||
-          uaddr === null || uaddr === undefined ||
-          len === null || len === undefined || len.eq(0)) {
+      uaddr === null || uaddr === undefined ||
+      len === null || len === undefined || len.eq(0)) {
       throw new Error('copyin: invalid arguments')
     }
     if (!ipv6_kernel_rw.data.pipemap_buffer || !ipv6_kernel_rw.data.pipe_addr || !ipv6_kernel_rw.data.pipe_write_fd) {
@@ -2143,6 +2143,6 @@ function cleanup () {
 
 function cleanup_fail () {
   utils.notify('Lapse Failed! reboot and try again! UwU')
-  jsmaf.root.children.push(bg_fail)
+  // jsmaf.root.children.push(bg_fail) // Removed fail image
   cleanup()
 }
