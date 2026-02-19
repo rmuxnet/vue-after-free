@@ -30,7 +30,7 @@ import { fn, BigInt } from 'download0/types'
   jsmaf.root.children.length = 0
 
   new Style({ name: 'white', color: '#e0e0e0', size: 30 })
-  new Style({ name: 'selected', color: '#4fc3f7', size: 36 })
+  new Style({ name: 'selected', color: '#a11ea1ff', size: 36 })
   new Style({ name: 'version', color: '#888888', size: 18 })
 
   const background = new Image({
@@ -81,7 +81,7 @@ import { fn, BigInt } from 'download0/types'
 
   let prevButton = -1
 
-  function updateHighlight () {
+  function updateHighlight() {
     for (let i = 0; i < buttons.length; i++) {
       const btn = buttons[i]
       if (!btn) continue
@@ -97,7 +97,7 @@ import { fn, BigInt } from 'download0/types'
     prevButton = currentButton
   }
 
-  function handleButtonPress () {
+  function handleButtonPress() {
     if (currentButton === buttons.length - 1) {
       log('Exiting application...')
       try {
@@ -125,7 +125,7 @@ import { fn, BigInt } from 'download0/types'
       const selectedOption = menuOptions[currentButton]
       if (!selectedOption) return
       if (selectedOption.script === 'loader.js') {
-        jsmaf.onKeyDown = function () {}
+        jsmaf.onKeyDown = function () { }
       }
       log('Loading ' + selectedOption.script + '...')
       try {
